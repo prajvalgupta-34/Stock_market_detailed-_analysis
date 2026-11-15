@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  mysql-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: stock_analytics
+    ports:
+      - "3306:3306"
+    
+  etl-pipeline:
+    build: .
+    depends_on:
+      - mysql-db

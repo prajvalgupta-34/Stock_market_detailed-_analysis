@@ -1,0 +1,25 @@
+name: Cloud ETL Scheduler (Post-Market)
+
+on:
+  schedule:
+    # Runs at 12:30 UTC daily (approx 6:00 PM IST)
+    - cron: '30 12 * * 1-5'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python Environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Data Engineering Stack
+        run: pip install yfinance pandas sqlalchemy pymysql
+
+      - name: Execute Autonomous ETL Ingestion
+        run: python data_ingestion.py

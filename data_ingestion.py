@@ -23,6 +23,7 @@ for ticker in tickers:
 df = pd.concat(df_list)
 df.reset_index(inplace=True)
 
+
 # Standardize column names (Now explicitly 7 columns)
 df.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Ticker']
 
@@ -32,6 +33,24 @@ df['Date'] = pd.to_datetime(df['Date']).dt.tz_localize(None)
 # Calculate daily return percentage
 df.dropna(inplace=True)
 df['Daily_Return_Pct'] = df.groupby('Ticker')['Close'].pct_change() * 100
+
+# Calculate daily return percentage
+df.dropna(inplace=True)
+df['Daily_Return_Pct'] = df.groupby('Ticker')['Close'].pct_change() * 100
+
+# --- NEW QUANT METRICS UPGRADE ---
+# 1. Cumulative Return
+df['Cumulative_Return'] = (1 + df['Daily_Return_Pct'] / 100).groupby(df['Ticker']).cumprod()
+
+# 2. Maximum Drawdown (Risk Metric used by Quants)
+df['Rolling_Max'] = df.groupby('Ticker')['Cumulative_Return'].cummax()
+df['Drawdown_Pct'] = ((df['Cumulative_Return'] - df['Rolling_Max']) / df['Rolling_Max']) * 100
+
+# Drop helper column to keep database clean
+df.drop(columns=['Rolling_Max'], inplace=True)
+# ---------------------------------
+
+# 3. Load: Push to MySQL Database or CSV
 
 # 3. Load: Push to MySQL Database or CSV
 engine = create_engine('mysql+pymysql://root:password@localhost/stock_analytics')
